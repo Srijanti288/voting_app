@@ -1,0 +1,18 @@
+{
+  "name": "node_voting_app",
+  "version": "1.0.0",
+  "description": "A Voting Application where user can give vote to the given set of candidates",
+  "license": "ISC",
+  "author": "Srijanti",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.17.0"
+  }
+}
