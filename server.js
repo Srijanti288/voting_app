@@ -20,8 +20,8 @@ app.get('/',function (req, res) {
 const userRoutes = require('./routes/userRoutes');    // Import the router files
 const candidateRoutes = require ('./routes/candidateRoutes');
 
-app.use('/user', userRoutes);                            // Use the routers
-app.use('/candidates',localAuthMiddleware, candidateRoutes);
+app.use('/user',localAuthMiddleware, userRoutes);                            // Use the routers
+app.use('/candidates', candidateRoutes);
 
 
 

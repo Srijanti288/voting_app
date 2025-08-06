@@ -12,7 +12,7 @@ passport.use(new LocalStrategy ({
         if(!user){
             return done(null, false, {message: 'Invalid Aadhar Card Number or Password'});
         }
-        const isPasswordMatch = user.password == password ? true : false;
+        const isPasswordMatch = await user.comparePassword(password);
         if(isPasswordMatch){
             return done(null, user);
         } else {
