@@ -6,8 +6,7 @@ router.post('/', async(req, res)=>{
     try {
         const data = req.body;
         const newCandidate = new Candidate(data);
-        const response = await newCandidate.save();
-        console.log('candidate created');
+        const response = await newCandidate.save();    // new candidate created.
         res.status(201).json(response);
     } catch (err){
         console.log(err);
@@ -18,7 +17,6 @@ router.post('/', async(req, res)=>{
 router.get('/', async (req,res)=>{
     try {
         const candidates = await Candidate.find();
-        console.log('candidate data fetched');
         res.status(200).json(candidates);
     } catch (err) {
         console.log(err);
@@ -38,7 +36,6 @@ router.put('/:id', async (req,res)=>{
         if(!response){
             return res.status(404).json({error: 'Candidate not found'});
         }
-        console.log('candidate updated');
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
@@ -53,7 +50,6 @@ router.delete('/:id', async (req, res)=>{
         if(!response){
             return res.status(404).json({error: 'Candidate not found'});
             }
-            console.log('candidate deleted');
             res.status(200).json(response);
             } catch (err) {
                 console.log(err);

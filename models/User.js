@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { uniq } = require('lodash');
 
 // Define the User schema
 const userSchema = new mongoose.Schema({
@@ -12,7 +13,8 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     email: {
-        type: String
+        type: String,
+        unique: true
     },
     mobile: {
         type: String
@@ -24,7 +26,7 @@ const userSchema = new mongoose.Schema({
     aadharCardNumber: {
         type: Number,
         required: true,
-        unqiue: true
+        unique: true
     },
     password: {
         type: String,
