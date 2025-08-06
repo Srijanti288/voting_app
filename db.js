@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Define the MongoDB connection URL
-const MongoURL = 'mongodb://localhost:27017/Voting_Application_Database';
+
+// Define the Local MongoDB connection URL
+//const LocalMongoURL = process.env.LOCAL_DB_URL;
+const MongoURL = process.env.DB_URL;
+
 
 // Set up MongoDB connection
 mongoose.connect(MongoURL, {
