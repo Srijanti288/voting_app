@@ -3,12 +3,12 @@ require('dotenv').config();
 
 
 // Define the Local MongoDB connection URL
-//const LocalMongoURL = process.env.LOCAL_DB_URL;
-const MongoURL = process.env.DB_URL;
+const LocalMongoURL = process.env.LOCAL_DB_URL;
+//const MongoURL = process.env.DB_URL;
 
 
 // Set up MongoDB connection
-mongoose.connect(MongoURL, {
+mongoose.connect(LocalMongoURL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
