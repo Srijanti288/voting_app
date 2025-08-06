@@ -7,7 +7,7 @@ const jwtAuthMiddleware = (req, res, next) => {
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
-            message: 'Authorization header missing or invalid'
+            message: 'Token not found or Authorization header missing or invalid '
         });
     }
     const token = authHeader.split(' ')[1]; // Get token part
