@@ -2,27 +2,36 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const  { jwtAuthMiddleware, generateToken} = require('./../jwt');
+const bcrypt = require('bcrypt');
 
-// 🔐 Sign up route
+
+// 🔐 SignUp Route to add a new user
 router.post('/signup', async (req, res) => {
-     const data = req.body;   // Assuming the request body contains the person data
+    const data = req.body; // { name, email, password, role, ... }
 
     try {
-         // Check if user already exists
-        const existingUser = await User.findOne(data);
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already registered' });
+        // If the role is 'admin', check if an admin already exists
+        if (data.role === 'admin') {
+            const existingAdmin = await User.findOne({ role: 'admin' });
+            if (existingAdmin) {
+                return res.status(403).json({ message: 'Admin already exists. Only one admin allowed.' });
+            }
         }
-        // Create new user
-        const newUser = new User(data);     
-        const response = await newUser.save();    // Save the new user to the database.
 
-        // Generate token
-        const payload = {
-            id: response.id,
-            aadharCardNumber: response.aadharCardNumber
+        // Check if user already exists by unique fields like email or aadhar
+        const existingUser = await User.findOne({ aadharCardNumber: data.aadharCardNumber });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already registered with this aadhar card no.' });
         }
+
+        // Create and save new user
+        const newUser = new User(data);
+        const response = await newUser.save();
+
+        // Generate JWT token
+        const payload = { id: response.id };
         const token = generateToken(payload);
+
         res.status(201).json({ message: 'User registered successfully', token: token });
     } catch (err) {
         console.error(err);
@@ -30,31 +39,31 @@ router.post('/signup', async (req, res) => {
     }
 });
 
-// 🔐 Login Route
+
+// 🔐 Login Route 
 router.post('/login', async (req, res) => {
     const { aadharCardNumber, password } = req.body;
 
     try {
-        // 1. Check if user exists
+        // Check if user exists by aadhar card number
         const user = await User.findOne({ aadharCardNumber });
         if (!user) {
             return res.status(401).json({ message: 'Invalid Aadhar number or password' });
         }
 
-        // 2. Compare password using bcrypt
+        // Compare password using bcrypt
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid Aadhar number or password' });
         }
 
-        // 3. Generate JWT token
+        // Generate JWT token
         const payload = {
-            id: user.id,
-            aadharCardNumber: user.aadharCardNumber
+            id: user.id
         }
         const token = generateToken(payload);
 
-        // 4. Respond with token
+        // Respond with token
         res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
         console.error(error);
@@ -79,31 +88,32 @@ router.get('/profile', jwtAuthMiddleware, async (req, res) => {
     }
 });
 
-// GET method to get all the user
-router.get('/', jwtAuthMiddleware, async (req,res) => {
-    try {
-        const data =  await User.find().select('-password');
-        res.status(200).json(data);
-    } catch (err){
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error'});
-    }
-});
+// 🔒 PUT /user/profile/password — change password
+router.put('/profile/password',jwtAuthMiddleware, async (req,res)=>{
+     try {
+        const userId = req.user; // from token
+        const { currentPassword, newPassword } = req.body;
 
-// GET /user/:roleType - Fetch users based on role
-router.get('/:roleType', async (req, res)=>{
-    try{
-        const roleType = req.params.roleType;    // const {roleType} = req.params;
+        const user = await User.findById(req.user.id); 
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-        if (roleType == 'voter' || roleType == 'admin'){
-            const users = await User.find({role: roleType}).select('-password'); // Exclude password
-            res.status(200).json(users);
-        } else{
-            res.status(400).json({error: 'Invalid role type. Must be voter or admin.' });
-        } 
-    } catch (err){
+        // ✅ Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+
+        // ✅ Hash new password and update
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal server error'});
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
